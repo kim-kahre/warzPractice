@@ -67,7 +67,7 @@ public class main extends JavaPlugin implements Listener{
     public void onDisable() {}
 	@EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-		//map boundaries
+		//map boundaries move the player back unless he is an Operator
 		if (!event.getPlayer().isOp()) {
 			if (event.getPlayer().getLocation().getX()<-1379) {
 				event.getPlayer().teleport(new Location(event.getPlayer().getWorld(), -1379, event.getPlayer().getLocation().getY(), event.getPlayer().getLocation().getZ()));
@@ -96,30 +96,27 @@ public class main extends JavaPlugin implements Listener{
 		 
 		Objective objective = board.registerNewObjective("test", "dummy");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		objective.setDisplayName(ChatColor.GREEN + "Stats");
+		objective.setDisplayName(ChatColor.WHITE + "Stats");
 		 
-		Score score = objective.getScore(ChatColor.GREEN + "Kills: "); //Get a fake offline player
-		score.setScore((int)meta.getMetadata(event.getPlayer(), "kills"));
-		Score score2 = objective.getScore(ChatColor.GREEN + "Deaths: "); //Get a fake offline player
-		score2.setScore((int)meta.getMetadata(event.getPlayer(), "deaths"));
-		Score score3 = objective.getScore(ChatColor.GREEN + "Gems: "); //Get a fake offline player
-		score3.setScore((int)meta.getMetadata(event.getPlayer(), "gems"));
+		Score kills = objective.getScore(ChatColor.GREEN + "Kills: "); //Get a fake offline player
+		kills.setScore((int)meta.getMetadata(event.getPlayer(), "kills"));
+		Score deaths = objective.getScore(ChatColor.GREEN + "Deaths: "); //Get a fake offline player
+		deaths.setScore((int)meta.getMetadata(event.getPlayer(), "deaths"));
+		Score gems = objective.getScore(ChatColor.GREEN + "Gems: "); //Get a fake offline player
+		gems.setScore((int)meta.getMetadata(event.getPlayer(), "gems"));
 		event.getPlayer().setScoreboard(board);
     }
 	@EventHandler
 	public void onSignClick(PlayerInteractEvent e) {
+		//the spawn warp signs. Booring stuff
 		if(e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if(e.getClickedBlock().getType() == Material.SIGN || e.getClickedBlock().getType() == Material.SIGN_POST || e.getClickedBlock().getType() == Material.WALL_SIGN) {
-		    Sign sign = (Sign) e.getClickedBlock().getState();
-		    if(sign.getLine(0).contains("Warp - ")) {
-		    	e.getPlayer().teleport(new Location(e.getPlayer().getWorld(), Integer.valueOf(sign.getLine(1)), Integer.valueOf(sign.getLine(2)), Integer.valueOf(sign.getLine(3))));
-		    }
-			} else{
-		   
+			    Sign sign = (Sign) e.getClickedBlock().getState();
+			    if(sign.getLine(0).contains("Warp - ")) {
+			    	e.getPlayer().teleport(new Location(e.getPlayer().getWorld(), Integer.valueOf(sign.getLine(1)), Integer.valueOf(sign.getLine(2)), Integer.valueOf(sign.getLine(3))));
+			    }
+			}
 		  }
-		  } else {
-	  //do nothing
-	  }
 	}
 	
 	@EventHandler
@@ -127,13 +124,13 @@ public class main extends JavaPlugin implements Listener{
 		event.getPlayer().teleport(event.getPlayer().getWorld().getSpawnLocation());
 		final Player p = event.getPlayer();
 		final metaData meta = new metaData();
-		BukkitRunnable r = new BukkitRunnable() {
+		BukkitRunnable getStats = new BukkitRunnable() {
 			   @Override
 			   public void run() {
 			      try {
 			         openConnection();
-			         Statement statement = connection.createStatement();
-			         ResultSet stats = statement.executeQuery("SELECT * FROM warz19profile WHERE UUID = '"+p.getUniqueId().toString()+"';");
+			         Statement statsQuery = connection.createStatement();
+			         ResultSet stats = statsQuery.executeQuery("SELECT * FROM warz19profile WHERE UUID = '"+p.getUniqueId().toString()+"';");
 			         int kills = -1;
 			         int deaths = 0;
 			         int gems = 0;
@@ -144,9 +141,10 @@ public class main extends JavaPlugin implements Listener{
 			        		 gems = stats.getInt("gems");
 			        	 }
 			         }
+			         //if the player isnt in the database, add him to it
 			         if (kills == -1) {
-    			         Statement statement2 = connection.createStatement();
-    			         statement2.executeUpdate("INSERT INTO warz19profile (UUID, KILLS, DEATHS, gems) VALUES ('"+p.getUniqueId().toString()+"', 0, 0, 0);");
+    			         Statement statsUpdate= connection.createStatement();
+    			         statsUpdate.executeUpdate("INSERT INTO warz19profile (UUID, KILLS, DEATHS, gems) VALUES ('"+p.getUniqueId().toString()+"', 0, 0, 0);");
     			         kills = 0;
 			         }	
 			 		meta.setMetadata(p, "kills", kills);
@@ -160,7 +158,7 @@ public class main extends JavaPlugin implements Listener{
 			   }
 			};
 			 
-			r.runTaskAsynchronously(this);
+			getStats.runTaskAsynchronously(this);
     }
 	@EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
@@ -169,15 +167,15 @@ public class main extends JavaPlugin implements Listener{
  		final String kills = String.valueOf(meta.getMetadata(p, "kills"));
  		final String deaths = String.valueOf(meta.getMetadata(p, "deaths"));
  		final String gems = String.valueOf(meta.getMetadata(p, "gems"));
-		BukkitRunnable r = new BukkitRunnable() {
+		BukkitRunnable updateStats = new BukkitRunnable() {
 			   @Override
 			   public void run() {
 			      try {
 			         openConnection();
-			         Statement statement = connection.createStatement();
-			         statement.executeUpdate("DELETE FROM warz19profile WHERE UUID = '"+p.getUniqueId().toString()+"';");
-			         Statement statement2 = connection.createStatement();
-    			     statement2.executeUpdate("INSERT INTO warz19profile (UUID, KILLS, DEATHS, gems) VALUES ('"+p.getUniqueId().toString()+"', "+kills+", "+deaths+", "+gems+");");
+			         Statement deleteold = connection.createStatement();
+			         deleteold.executeUpdate("DELETE FROM warz19profile WHERE UUID = '"+p.getUniqueId().toString()+"';");
+			         Statement insertnew = connection.createStatement();
+    			     insertnew.executeUpdate("INSERT INTO warz19profile (UUID, KILLS, DEATHS, gems) VALUES ('"+p.getUniqueId().toString()+"', "+kills+", "+deaths+", "+gems+");");
 			      } catch(ClassNotFoundException e) {
 			         e.printStackTrace();
 			      } catch(SQLException e) {
@@ -186,7 +184,7 @@ public class main extends JavaPlugin implements Listener{
 			   }
 			};
 			 
-			r.runTaskAsynchronously(this);
+			updateStats.runTaskAsynchronously(this);
     }
 	@EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {

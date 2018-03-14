@@ -8,13 +8,13 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
 public class lastDamager {
-	public String getLastDamager(Player object) {
-		  List<MetadataValue> values = object.getMetadata("lastDamager");  
+	public String getLastDamager(Player player) {
+		  List<MetadataValue> values = player.getMetadata("lastDamager");  
 		  for (MetadataValue value : values) {
 		     if (value.getOwningPlugin() == Bukkit.getPluginManager().getPlugin("brawlGuns")) {
 		    	 return value.asString();
 		     }
 		  }
-		  return object.getName();
+		  return player.getName();
 		}
 }

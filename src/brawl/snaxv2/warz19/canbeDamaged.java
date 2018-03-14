@@ -30,7 +30,7 @@ public class canbeDamaged {
 		  return false;
 		}
 	    
-		public void canbeDamaged(Player object, int can) {
-			  object.setMetadata("canBeShot", new FixedMetadataValue(Bukkit.getPluginManager().getPlugin("brawlGuns"), can));
+		public void canbeDamaged(Player player, int can) {
+			  player.setMetadata("canBeShot", new FixedMetadataValue(Bukkit.getPluginManager().getPlugin("brawlGuns"), can));
 			}
 }
