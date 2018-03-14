@@ -1,0 +1,5 @@
+depend: [brawlEssentials]
+name: brawlWarz19
+main: brawl.snaxv2.warz19.main
+version: 0.1
+author: snaxv2
