@@ -33,6 +33,9 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
 import net.md_5.bungee.api.ChatColor;
 
 
@@ -62,6 +65,7 @@ public class main extends JavaPlugin implements Listener{
         username = "root";
         password = "haxor";  
     	Bukkit.getServer().getPluginManager().registerEvents(this, this);
+    	Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
     }
     @Override
     public void onDisable() {}
@@ -81,8 +85,15 @@ public class main extends JavaPlugin implements Listener{
 			if (event.getPlayer().getLocation().getZ()>572) {
 				event.getPlayer().teleport(new Location(event.getPlayer().getWorld(), event.getPlayer().getLocation().getX(), event.getPlayer().getLocation().getY(), 572));
 			}
-			
 		}
+		//if player goes into the thing back to lobby, send him back
+		if (event.getPlayer().getLocation().add(0, -0.5, 0).getBlock().getType().equals(Material.EMERALD_BLOCK)) {
+			ByteArrayDataOutput out = ByteStreams.newDataOutput();
+			out.writeUTF("Connect");
+		    out.writeUTF("lobby");
+		    event.getPlayer().sendPluginMessage(this, "BungeeCord", out.toByteArray());
+		}
+		
 		//scoreboard aka sidebar
 		metaData meta = new metaData();
 		canbeDamaged dam = new canbeDamaged();
