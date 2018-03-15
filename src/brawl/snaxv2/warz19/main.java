@@ -17,6 +17,8 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -171,6 +173,21 @@ public class main extends JavaPlugin implements Listener{
 			 
 			getStats.runTaskAsynchronously(this);
     }
+	@EventHandler
+	public void onBlockBreak(BlockBreakEvent event){
+		permissionStuff perm = new permissionStuff();
+		if (!(perm.getRankId(event.getPlayer())>4)) {
+			event.setCancelled(true);
+		}
+	}
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent event){
+		permissionStuff perm = new permissionStuff();
+		if (!(perm.getRankId(event.getPlayer())>4)) {
+			event.setCancelled(true);
+		}
+	}
+	
 	@EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
 		final Player p = event.getPlayer();
